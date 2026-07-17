@@ -10,10 +10,10 @@ const {
     ButtonStyle
 } = require("discord.js");
 
-const { clientId, guildId, token } = require('./config.json');
-const TOKEN = token;
-const CLIENT_ID = clientId;
-const GUILD_ID = guildId;
+//const { clientId, guildId, token } = require('./config.json');
+const TOKEN = process.env.TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds],
