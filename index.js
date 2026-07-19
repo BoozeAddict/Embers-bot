@@ -59,20 +59,26 @@ function updateMessageIdInData(messageId) {
     fs.writeFileSync(dataFilePath, JSON.stringify(data));
 }
 
-function updateSignupMessage() {
+async function updateSignupMessage() {
     const hrSignupMessage = generateHrSignupMessage();
     const channelId = getChannelIdFromData();
     const messageId = getMessageIdFromData();
 
-    if (channelId && messageId) {
-        const channel = client.channels.cache.get(channelId);
-        if (channel) {
-            channel.messages.fetch(messageId)
-                .then(message => {
-                    message.edit(hrSignupMessage);
-                })
-                .catch(console.error);
+    if (!channelId || !messageId) return;
+
+    const channel = await client.channels.fetch(channelId);
+    if (!channel) return;
+
+    try {
+        const message = await channel.messages.fetch(messageId);
+        await message.edit(hrSignupMessage);
+    } catch (error) {
+        if (error.code === 10008) {
+            console.log("Message not found. It may have been deleted.");
+            return;
         }
+
+        console.error("Error updating signup message:", error);
     }
 }
 
@@ -85,7 +91,6 @@ function addSignup(day, player) {
         // check if player already signed up for the specified day
         if (data.days[day]?.includes(player)) {
             return; // player already signed up for this day, do nothing
-        }
         }
 
         if (data.days[day]) {
@@ -163,7 +168,7 @@ function generateHrSignupMessage() {
     }
 
 
-return "<:Embers:1527406753657131099> **Hero Realm Sign-Up** <:Embers:1527406753657131099>\n\n"+
+return "<:Embers:1473400384252018709> **Hero Realm Sign-Up** <:Embers:1473400384252018709>\n\n"+
            "**Monday** <t:1775755800:t> 🔥\n*" +
             stringPlayersMonday + "*\n\n" +
             "**Wednesday** <t:1775755800:t> 🔥 \n*" +
@@ -356,11 +361,11 @@ client.on("interactionCreate", async (interaction) => {
 
     if (day) {
         if (day === "remove") {
-            removeSignup(interaction.user.displayName);
+            removeSignup(interaction.user.id);
             await interaction.reply({ content: "You have been removed from the signups.", ephemeral: true });
             updateSignupMessage();
         } else {
-            addSignup(day, interaction.user.displayName);
+            addSignup(day, interaction.user.id);
             await interaction.reply({ content: `You signed up for ${day}!`, ephemeral: true });
             updateSignupMessage();
         }
