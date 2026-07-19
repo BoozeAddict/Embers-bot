@@ -244,7 +244,7 @@ commands.push(
     .setName("createsignups")
     .setDescription("Create a new Hero Realm")
     .setDefaultMemberPermissions(
-        PermissionFlagsBits.ManageGuild
+        PermissionFlagsBits.ModerateMembers
     )
     .toJSON()
 )
@@ -255,7 +255,7 @@ commands.push(
     .setName("resetsignups")
     .setDescription("Reset Hero Realm signups")
     .setDefaultMemberPermissions(
-        PermissionFlagsBits.ManageGuild
+        PermissionFlagsBits.Timeout
     )
     .toJSON()
 )
