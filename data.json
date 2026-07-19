@@ -1,12 +1,1 @@
-{
-    "days": {
-        "monday": [
-            "Baijuu",
-            "BoozeAddict"
-        ],
-        "wednesday": [],
-        "friday": []
-    },
-    "hrSignupChannelId": "1527394133570883665",
-    "hrSignupMessageId": "1527695895888400574"
-}
+{"days":{"monday":["Baijuu","BoozeAddict"],"wednesday":[],"friday":[]},"hrSignupChannelId":"1527394133570883665","hrSignupMessageId":"1527741786858979444"}

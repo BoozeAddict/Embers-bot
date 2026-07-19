@@ -22,7 +22,9 @@ const client = new Client({
 });
 
 const fs = require("fs");
-const dataFilePath = ".\\data.json";
+const path = require("path");
+
+const dataFilePath = path.join(__dirname, "data.json");
 
 
 function getChannelIdFromData() {
@@ -80,12 +82,10 @@ function addSignup(day, player) {
     if (fs.existsSync(dataFilePath)) {
         const data = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
 
-        // check if player already signed up for any day
-        for (const d in data.days) {
-            if (data.days[d].includes(player)) {
-                // remove player from that day
-                data.days[d] = data.days[d].filter(p => p !== player);
-            }
+        // check if player already signed up for the specified day
+        if (data.days[day]?.includes(player)) {
+            return; // player already signed up for this day, do nothing
+        }
         }
 
         if (data.days[day]) {
@@ -191,6 +191,24 @@ function resetHRSignups() {
     updateSignupMessage();
 }
 
+function checkIfMessageExists() {
+    const channelId = getChannelIdFromData();
+    const messageId = getMessageIdFromData();
+    if (!channelId || !messageId) {
+        console.log("Channel ID or Message ID not set in data.json");
+        return false;
+    }
+    if (!client.channels.cache.has(channelId)) {
+        console.log("Channel not found");
+        return false;
+    }
+    if (!client.channels.cache.get(channelId).messages.cache.has(messageId)) {
+        console.log("Message not found");
+        return false;
+    }
+    return true;
+}
+
 ////////////// Commands
 
 const commands = [];
@@ -278,6 +296,11 @@ client.on("interactionCreate", async (interaction) =>
 
     // /signup
     if (interaction.commandName === "signup") {
+        if (!checkIfMessageExists()) {
+            await interaction.reply({ content: "The signup message does not exist. Please ask a council member to create it.", ephemeral: true });
+            return;
+        }
+
         if (interaction.options.getString("day") === "remove") {
             removeSignup(interaction.user.displayName);
             await interaction.reply({ content: "You have been removed from the signups.", ephemeral: true });
@@ -302,12 +325,20 @@ client.on("interactionCreate", async (interaction) =>
 
     // /resetsignups
     if (interaction.commandName === "resetsignups") {
+        if (!checkIfMessageExists()) {
+            await interaction.reply({ content: "The signup message does not exist. Please ask a council member to create it.", ephemeral: true });
+            return;
+        }
         resetHRSignups();
         await interaction.reply({ content: "Hero Realm signups have been reset.", ephemeral: true });
     }
 
     // /showsignups
     if (interaction.commandName === "showsignups") {
+        if (!checkIfMessageExists()) {
+            await interaction.reply({ content: "The signup message does not exist. Please ask a council member to create it.", ephemeral: true });
+            return;
+        }
         const hrSignupLink = generateSignupLink();
         await interaction.reply(hrSignupLink);
     }
@@ -317,7 +348,10 @@ client.on("interactionCreate", async (interaction) =>
 //////////// Button interactions
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isButton()) return;
-
+    if (!checkIfMessageExists()) {
+        await interaction.reply({ content: "The signup message does not exist. Please ask a council member to create it.", ephemeral: true });
+        return;
+    }
     const day = interaction.customId.split("_")[1];
 
     if (day) {
